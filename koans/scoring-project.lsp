@@ -50,8 +50,26 @@
 ; Your goal is to write the score method.
 
 (defun score (dice)
-  ; You need to write this method
-)
+  ;; calculate roll counts
+  (let ((rolls (list 0 0 0 0 0 0)))
+    (loop for roll in dice
+       do (incf (nth (- roll 1) rolls)))
+    ;; apply scoring logic
+    (loop for count in rolls
+       and pos = 1 then (+ 1 pos)
+       sum (cond
+             ((and (= pos 1)
+                   (if (>= count 3)
+                       (multiple-value-bind (q r) (floor count 3)
+                         (+ (* 1000 q) (* 100 r)))
+                       (* count 100))))
+             ((and (= pos 5) (< count 3)) (* count 50))
+             ((>= count 3)
+              (multiple-value-bind (q r) (floor count 3)
+                (+ (* 100 q pos) (* (if (= pos 5) 50 0) r))))
+             (t 0))
+       into final-score
+       finally (return final-score))))
 
 (define-test test-score-of-an-empty-list-is-zero
     (assert-equal 0 (score nil)))
